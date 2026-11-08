@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interferenz am Doppelspalt – Licht und Elektronen</title>
+<style>
+  /* =====================================================================
+   *  FARBSCHEMEN – beide aus dem Plakat abgeleitet
+   *  dark : Nachtblau mit Gold-Akzenten
+   *  light: Hellblau, Navy, Orange, Beige (wie die Plakatflächen)
+   * ===================================================================*/
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --bg0:#050b26; --glow1:#1b31906b; --glow2:#14267a80;
+    --panel:rgba(22,38,104,.58); --panel-border:rgba(150,185,255,.22); --card-shadow:0 10px 30px rgba(0,0,10,.35);
+    --text:#eef3ff; --text-soft:#dbe5ff; --muted:#a9b9e6;
+    --accent:#f2c261; --accent-soft:rgba(242,194,97,.14); --accent-line:rgba(242,194,97,.5);
+    --active:#2b4cb8; --on-active:#ffffff;
+    --ctl-bg:rgba(5,11,38,.55); --inset:rgba(5,11,38,.42); --line:rgba(150,185,255,.18);
+    --track:rgba(150,185,255,.22); --thumb-ring:#0b1a52;
+    --note-bg:rgba(242,194,97,.10); --note-text:#dbe5ff; --min-soft:rgba(125,180,255,.14);
+    --c1:#f2c261; --c2:#7db4ff;
+    --cv-bg:#040a24; --cv-ink:#f1f5ff; --cv-muted:#a9b9e6; --cv-label-bg:rgba(4,10,36,.80);
+    --cv-wall:#3b5fb8; --cv-wall-edge:#f2c261; --cv-screen:#030720; --cv-plane:rgba(150,200,255,.75);
+    --cv-sum:#ffffff; --cv-scope-bg:#040a24;
+    --wave-neg:#f2c261; --wave-zero:#07123a; --wave-pos:#8ec5ff;
+  }
+  :root[data-theme="light"]{
+    color-scheme:light;
+    --bg0:#cfe6f4; --glow1:rgba(255,255,255,.6); --glow2:rgba(150,195,235,.55);
+    --panel:#ffffff; --panel-border:#b7d3e8; --card-shadow:0 8px 22px rgba(30,60,120,.13);
+    --text:#1a2a6c; --text-soft:#27397f; --muted:#56659a;
+    --accent:#e8912d; --accent-soft:rgba(240,160,75,.16); --accent-line:rgba(232,145,45,.65);
+    --active:#1f2f7a; --on-active:#ffffff;
+    --ctl-bg:#eaf3fa; --inset:#e9f2f9; --line:#c6dcec;
+    --track:#bcd3e6; --thumb-ring:#ffffff;
+    --note-bg:#ddd3bc; --note-text:#2b2f55; --min-soft:rgba(42,70,176,.10);
+    --c1:#e8912d; --c2:#2a46b0;
+    --cv-bg:#f6fafd; --cv-ink:#1a2a6c; --cv-muted:#56659a; --cv-label-bg:rgba(255,255,255,.88);
+    --cv-wall:#1f2f7a; --cv-wall-edge:#e8912d; --cv-screen:#0d1647; --cv-plane:rgba(42,70,176,.75);
+    --cv-sum:#1a2a6c; --cv-scope-bg:#f6fafd;
+    --wave-neg:#ec9a3c; --wave-zero:#f6fafd; --wave-pos:#2a46b0;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    min-height:100vh;color:var(--text);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:
+      radial-gradient(1100px 700px at 12% -10%, var(--glow1) 0%, transparent 60%),
+      radial-gradient(900px 600px at 100% 100%, var(--glow2) 0%, transparent 55%),
+      var(--bg0);
+    background-attachment:fixed;
+  }
+  header{max-width:1500px;margin:0 auto;padding:24px 28px 12px}
+  .head-row{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+  .kicker{
+    display:inline-block;font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--accent);background:var(--accent-soft);border:1px solid var(--accent-line);
+    padding:5px 12px;border-radius:999px
+  }
+  h1{
+    margin:12px 0 4px;font-family:Cambria,Georgia,"Times New Roman",serif;font-weight:500;
+    font-size:clamp(28px,4.2vw,48px);letter-spacing:.01em
+  }
+  .sub{margin:0;font-family:Cambria,Georgia,serif;font-style:italic;color:var(--muted);font-size:clamp(15px,1.8vw,19px)}
+
+  main{
+    max-width:1500px;margin:0 auto;padding:10px 28px 30px;
+    display:grid;grid-template-columns:minmax(0,1.75fr) minmax(320px,1fr);gap:20px;align-items:start
+  }
+  .col{display:flex;flex-direction:column;gap:20px;min-width:0}
+  @media (max-width:1000px){
+    main{grid-template-columns:1fr;padding:10px 16px 24px}
+    header{padding:18px 16px 8px}
+    .col{display:contents}              /* Karten einzeln anordnen: Reihenfolge fürs Handy */
+    #cSim{order:1} #cParam{order:2} #cScope{order:3} #cRead{order:4} #cCmp{order:5}
+  }
+
+  .card{
+    background:var(--panel);border:1px solid var(--panel-border);border-radius:16px;
+    padding:16px 18px;box-shadow:var(--card-shadow);min-width:0
+  }
+  .card h2{
+    margin:0 0 12px;font-family:Cambria,Georgia,serif;font-style:italic;font-weight:500;
+    font-size:21px;color:var(--text)
+  }
+
+  /* ---------- Bedienelemente ---------- */
+  .toolbar{display:flex;flex-wrap:wrap;gap:10px 12px;align-items:center;margin-bottom:12px}
+  .seg{display:inline-flex;border:1px solid var(--panel-border);border-radius:999px;overflow:hidden;background:var(--ctl-bg)}
+  .seg button{
+    appearance:none;border:0;background:transparent;color:var(--muted);cursor:pointer;
+    font:inherit;font-size:14px;padding:8px 14px;transition:background .2s,color .2s
+  }
+  .seg button:hover{color:var(--text)}
+  .seg button[aria-pressed="true"]{background:var(--active);color:var(--on-active)}
+  .btn{
+    appearance:none;cursor:pointer;font:inherit;font-size:14px;color:var(--text);
+    background:var(--ctl-bg);border:1px solid var(--panel-border);border-radius:999px;padding:8px 14px;
+    transition:border-color .2s
+  }
+  .btn:hover{border-color:var(--accent)}
+  .chk{display:inline-flex;align-items:center;gap:7px;font-size:14px;color:var(--muted);cursor:pointer;user-select:none}
+  .chk input{accent-color:var(--accent);width:16px;height:16px}
+
+  canvas{
+    width:100%;height:auto;display:block;border-radius:12px;
+    border:1px solid var(--line)
+  }
+  #stage{aspect-ratio:1100/620;background:var(--cv-bg);touch-action:pan-y;cursor:crosshair}
+  #scope{aspect-ratio:560/240;background:var(--cv-scope-bg)}
+  .note{margin:10px 2px 0;font-size:12.5px;line-height:1.5;color:var(--muted)}
+
+  .legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin:10px 2px 0;font-size:12.5px;color:var(--muted);align-items:center}
+  .lg{display:inline-flex;align-items:center;gap:6px}
+  .sw{display:inline-block;width:22px;height:0;border-top:3px solid}
+  .sw.dash{border-top-style:dashed;border-top-width:2px}
+  .dt{display:inline-block;width:11px;height:11px;border-radius:50%}
+  .dt.fill{background:var(--cv-ink);border:2px solid var(--accent)}
+  .dt.hollow{background:var(--cv-bg);border:2px solid var(--cv-ink)}
+  .cb{display:inline-block;width:14px;height:14px;border-radius:3px;border:1px solid var(--line)}
+  body.view-rings .legend-sum{display:none}
+  body.view-sum .legend-rings{display:none}
+
+  /* ---------- Regler ---------- */
+  .ctl{margin-bottom:16px}
+  .ctl:last-child{margin-bottom:2px}
+  .ctl-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;font-size:14px}
+  .ctl-head label{color:var(--muted)}
+  .ctl-head output{font-variant-numeric:tabular-nums;color:var(--accent);font-weight:600}
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:999px;outline:none;cursor:pointer;
+    --pct:50%;
+    background:linear-gradient(90deg,var(--accent) var(--pct),var(--track) var(--pct))
+  }
+  input[type=range].plain{background:var(--track)}
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--accent);
+    border:3px solid var(--thumb-ring);box-shadow:0 0 0 2px var(--accent)
+  }
+  input[type=range]::-moz-range-thumb{
+    width:14px;height:14px;border-radius:50%;background:var(--accent);
+    border:3px solid var(--thumb-ring);box-shadow:0 0 0 2px var(--accent)
+  }
+  input[type=range]:focus-visible{outline:2px solid var(--c2);outline-offset:6px}
+
+  body.mode-light    [data-only="electron"]{display:none}
+  body.mode-electron [data-only="light"]{display:none}
+
+  /* ---------- Messwerte ---------- */
+  .readouts{display:flex;flex-wrap:wrap;gap:10px}
+  .ro{flex:1 1 105px;background:var(--inset);border:1px solid var(--line);border-radius:12px;padding:9px 12px}
+  .ro span{display:block;font-size:12px;color:var(--muted);margin-bottom:2px}
+  .ro b{font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
+  .ro.hl{border-color:var(--accent-line);background:var(--accent-soft)}
+  .formula{
+    margin-top:12px;padding:10px 12px;border-radius:12px;font-family:Cambria,Georgia,serif;
+    background:var(--accent-soft);border:1.5px solid var(--accent-line);font-size:15.5px;line-height:1.75;text-align:center
+  }
+
+  /* ---------- Messpunkt / Erklärung ---------- */
+  .chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+  .chip-label{font-size:13.5px;color:var(--muted)}
+  .chip{
+    appearance:none;cursor:pointer;font:inherit;font-size:13px;color:var(--text);
+    background:var(--ctl-bg);border:1px solid var(--panel-border);border-radius:999px;padding:5px 12px
+  }
+  .chip:hover:not(:disabled){border-color:var(--accent)}
+  .chip:disabled{opacity:.4;cursor:not-allowed}
+  .verdict{
+    margin-top:10px;padding:10px 12px;border-radius:12px;font-size:14.5px;line-height:1.55;
+    border:1.5px solid var(--accent-line);background:var(--accent-soft)
+  }
+  .verdict.min{border-color:var(--c2);background:var(--min-soft)}
+  .verdict.mid{border-color:var(--panel-border);background:var(--inset)}
+  .verdict .amp{color:var(--muted);font-size:13px}
+  ul.why{margin:12px 0 0;padding-left:20px;font-size:14px;line-height:1.6;color:var(--text-soft)}
+  ul.why li{margin-bottom:3px}
+
+  /* ---------- Vergleichstabelle ---------- */
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{padding:8px 8px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.4}
+  th{color:var(--accent);font-weight:600}
+  td:first-child{color:var(--muted);white-space:nowrap}
+  body.mode-light    .c-light{background:var(--accent-soft)}
+  body.mode-electron .c-el{background:var(--accent-soft)}
+  .takeaway{
+    margin:12px 0 0;padding:10px 12px;border-radius:12px;background:var(--note-bg);color:var(--note-text);
+    font-size:14px;line-height:1.5
+  }
+  footer{max-width:1500px;margin:0 auto;padding:0 28px 28px;color:var(--muted);font-size:12.5px}
+</style>
+</head>
+<body class="mode-light view-rings">
+
+<header>
+  <div class="head-row">
+    <div>
+      <span class="kicker">Im Physikraum durch die Zeit · Materiewellenhypothese</span>
+      <h1>Interferenz am Doppelspalt</h1>
+      <p class="sub">Von Youngs Lichtversuch zu Jönssons Elektroneninterferenz (1961)</p>
+    </div>
+    <button class="btn" id="btnTheme" type="button">☀ Hellmodus</button>
+  </div>
+</header>
+
+<main>
+  <!-- ================= Linke Spalte ================= -->
+  <div class="col">
+
+    <section class="card" id="cSim" aria-label="Simulation">
+      <div class="toolbar">
+        <div class="seg" role="group" aria-label="Versuch">
+          <button id="modeLight" type="button" aria-pressed="true">Licht (Young)</button>
+          <button id="modeElectron" type="button" aria-pressed="false">Elektronen (Jönsson)</button>
+        </div>
+        <div class="seg" role="group" aria-label="Darstellung">
+          <button id="viewRings" type="button" aria-pressed="true">Einzelwellen</button>
+          <button id="viewSum" type="button" aria-pressed="false">Überlagerung</button>
+        </div>
+        <button class="btn" id="btnPlay" type="button">⏸ Pause</button>
+        <button class="btn" id="btnReset" type="button" data-only="electron">↺ Zähler zurücksetzen</button>
+        <label class="chk"><input type="checkbox" id="chkLines" checked> Maxima / Minima einzeichnen</label>
+      </div>
+
+      <canvas id="stage" aria-label="Animation: Interferenz am Doppelspalt"></canvas>
+
+      <!-- Legende je nach Darstellung -->
+      <div class="legend legend-rings">
+        <span class="lg"><i class="sw" style="border-color:var(--c1)"></i>Welle von Spalt 1</span>
+        <span class="lg"><i class="sw" style="border-color:var(--c2)"></i>Welle von Spalt 2</span>
+        <span class="lg"><i class="sw" style="border-color:var(--muted)"></i>Wellenberg</span>
+        <span class="lg"><i class="sw dash" style="border-color:var(--muted)"></i>Wellental</span>
+        <span class="lg"><i class="dt fill"></i>Berg trifft Berg (Tal trifft Tal): Verstärkung</span>
+        <span class="lg"><i class="dt hollow"></i>Berg trifft Tal: Auslöschung</span>
+      </div>
+      <div class="legend legend-sum">
+        <span class="lg"><i class="cb" style="background:var(--wave-pos)"></i>Wellenberg</span>
+        <span class="lg"><i class="cb" style="background:var(--wave-neg)"></i>Wellental</span>
+        <span class="lg"><i class="cb" style="background:var(--wave-zero)"></i>ruhig (Auslöschung)</span>
+      </div>
+
+      <p class="note">Alle Wellenfronten laufen von der Quelle zu den Spalten und weiter zum Schirm. Die Quelle beleuchtet beide Spalte gleichmäßig und gleichphasig. Klicke oder ziehe im Bild, um den Messpunkt P auf dem Schirm zu setzen.</p>
+      <p class="note" data-only="electron">Elektronen werden am Schirm einzeln als Punkte nachgewiesen. Das Streifenmuster entsteht erst aus vielen Einschlägen. Bei großem Elektronenstrom (wie bei Jönsson) ist es sofort sichtbar.</p>
+      <p class="note" id="scaleNote"></p>
+    </section>
+
+    <section class="card" id="cScope" aria-label="Warum Maxima und Minima entstehen">
+      <h2>Warum entstehen Maxima und Minima?</h2>
+      <div class="chips">
+        <span class="chip-label">Messpunkt P:</span>
+        <button class="chip" type="button" data-p="mid">Mitte (n = 0)</button>
+        <button class="chip" type="button" data-p="max1">1. Maximum</button>
+        <button class="chip" type="button" data-p="min1">1. Minimum</button>
+      </div>
+      <input type="range" id="py" class="plain" min="-298" max="298" step="1" value="0" aria-label="Messpunkt P auf dem Schirm verschieben">
+      <canvas id="scope" style="margin-top:12px" aria-label="Schwingungen der beiden Wellen am Messpunkt P und ihre Summe"></canvas>
+      <div class="verdict" id="verdict"></div>
+      <ul class="why">
+        <li>Von beiden Spalten laufen gleiche Wellen aus.</li>
+        <li>Der Weg zu P ist verschieden lang: Gangunterschied Δs = r₂ − r₁.</li>
+        <li>Δs = n · λ: Berg trifft Berg → Verstärkung (Maximum).</li>
+        <li>Δs = (n + ½) · λ: Berg trifft Tal → Auslöschung (Minimum).</li>
+      </ul>
+    </section>
+
+  </div>
+
+  <!-- ================= Rechte Spalte ================= -->
+  <div class="col">
+
+    <section class="card" id="cParam" aria-label="Parameter">
+      <h2>Parameter</h2>
+
+      <div class="ctl" data-only="light">
+        <div class="ctl-head"><label for="lambda">Wellenlänge λ</label><output id="v-lambda"></output></div>
+        <input type="range" id="lambda" min="400" max="750" step="1" value="550">
+      </div>
+
+      <div class="ctl" data-only="electron">
+        <div class="ctl-head"><label for="U">Beschleunigungsspannung U</label><output id="v-U"></output></div>
+        <input type="range" id="U" min="10" max="200" step="1" value="50">
+      </div>
+
+      <div class="ctl">
+        <div class="ctl-head"><label for="d">Spaltabstand d</label><output id="v-d"></output></div>
+        <input type="range" id="d" min="1" max="4" step="0.1" value="2">
+      </div>
+
+      <div class="ctl">
+        <div class="ctl-head"><label for="L">Abstand zum Schirm L</label><output id="v-L"></output></div>
+        <input type="range" id="L" min="20" max="80" step="1" value="50">
+      </div>
+
+      <div class="ctl" data-only="electron">
+        <div class="ctl-head"><label for="rate">Elektronenstrom</label><output id="v-rate"></output></div>
+        <input type="range" id="rate" min="1" max="600" step="1" value="60">
+      </div>
+    </section>
+
+    <section class="card" id="cRead" aria-label="Messwerte">
+      <h2>Messwerte</h2>
+      <div class="readouts">
+        <div class="ro"><span>Wellenlänge λ</span><b id="rLam">–</b></div>
+        <div class="ro" data-only="electron"><span>Geschwindigkeit v</span><b id="rV">–</b></div>
+        <div class="ro"><span>1. Maximum α₁</span><b id="rAlpha">–</b></div>
+        <div class="ro hl"><span>Streifenabstand Δy</span><b id="rDy">–</b></div>
+      </div>
+      <div class="formula">
+        Verstärkung: Δs = n · λ<br>
+        Auslöschung: Δs = (n + ½) · λ<br>
+        Streifenabstand: Δy ≈ λ · L / d
+      </div>
+    </section>
+
+    <section class="card" id="cCmp" aria-label="Vergleich">
+      <h2>Young und Jönsson im Vergleich</h2>
+      <table>
+        <thead>
+          <tr><th></th><th class="c-light">Young (Licht)</th><th class="c-el">Jönsson (Elektronen)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Was interferiert?</td><td class="c-light">Lichtwellen</td><td class="c-el">Materiewellen der Elektronen</td></tr>
+          <tr><td>Wellenlänge</td><td class="c-light">≈ 400–750 nm</td><td class="c-el">λ = h/p ≈ 5 pm (bei 50 kV)</td></tr>
+          <tr><td>Spaltabstand</td><td class="c-light">≈ 0,1–0,5 mm</td><td class="c-el">≈ 2 µm</td></tr>
+          <tr><td>Muster</td><td class="c-light">durchgehende Streifen</td><td class="c-el">Streifen aus einzelnen Punkten</td></tr>
+          <tr><td>Streifenabstand</td><td class="c-light">≈ mm, direkt sichtbar</td><td class="c-el">≈ 1 µm, erst nach Vergrößerung sichtbar</td></tr>
+          <tr><td>Aussage</td><td class="c-light">Licht ist eine Welle</td><td class="c-el">Auch Teilchen zeigen Wellencharakter</td></tr>
+        </tbody>
+      </table>
+      <p class="takeaway">Gleiche Bedingung für Maxima: Δs = n · λ. Nur ist λ bei Elektronen etwa 100 000-mal kleiner als bei Licht.</p>
+    </section>
+
+  </div>
+</main>
+
+<footer>Schematische Simulation zum Plakat „1961 – Der Doppelspaltversuch“. Die Zahlenwerte unter „Messwerte“ sind reale Werte, die Zeichnung ist nicht maßstabsgetreu.</footer>
+
+<script>
+(() => {
+'use strict';
+
+/* =====================================================================
+ *  KONSTANTEN & ZUSTAND
+ * ===================================================================*/
+const W = 1100, H = 620;      // logische Zeichenfläche (wird für Schärfe hochskaliert)
+const WALL_X = 170;           // x-Position der Doppelspaltblende
+const YC = H / 2;             // optische Achse
+const STRIP = 34;             // Breite des Schirmstreifens
+const CS = 3;                 // Zellgröße des Wellenfelds (Pixel)
+const WAVE_SPEED = 60;        // Ausbreitungsgeschwindigkeit der Wellen in der Animation (px/s)
+const BIN = 5;                // Klassenbreite des Elektronen-Histogramms (px)
+const NB = Math.floor((H - 20) / BIN);
+const TWO_PI = Math.PI * 2;
+const PLANE_AMP = 0.6;        // Amplitude der einfallenden ebenen Welle (Farbskala)
+
+// Abbildungsmaßstäbe der Zeichnung (schematisch)
+const PX_PER_NM = 0.08;               // Licht: 550 nm ≙ 44 px
+const PX_PER_UM = 1000 * PX_PER_NM;   // Spaltabstand: 1 µm ≙ 80 px (d/λ bei Licht maßstabsgetreu)
+const PX_PER_PM = 40 / 5.36;          // Elektronen: 5,36 pm (50 kV) ≙ 40 px (stark vergrößert)
+const PX_PER_CM_L = 8;                // Schirmabstand: 1 cm ≙ 8 px
+
+// Naturkonstanten (SI)
+const PHYS = { h: 6.62607015e-34, m: 9.1093837015e-31, e: 1.602176634e-19, c: 299792458 };
+
+const state = {
+  mode: 'light',       // 'light' | 'electron'
+  view: 'rings',       // 'rings' (Einzelwellen) | 'sum' (Überlagerung)
+  lambdaNm: 550,       // Lichtwellenlänge in nm
+  U: 50,               // Beschleunigungsspannung in kV
+  d: 2.0,              // Spaltabstand in µm
+  L: 50,               // Schirmabstand in cm
+  rate: 60,            // Elektronen pro Sekunde
+  showLines: true,
+  playing: true,
+  py: YC               // y-Position des Messpunkts P auf dem Schirm
+};
+
+const $ = id => document.getElementById(id);
+const root = document.documentElement;
+const de = (x, digits = 3) => x.toLocaleString('de-DE', { maximumSignificantDigits: digits });
+
+/* =====================================================================
+ *  PHYSIK
+ * ===================================================================*/
+// Relativistische de-Broglie-Wellenlänge für Beschleunigungsspannung U (in Volt)
+function deBroglie(Uvolt) {
+  const { h, m, e, c } = PHYS;
+  const eU = e * Uvolt;
+  const p = Math.sqrt(2 * m * eU * (1 + eU / (2 * m * c * c)));
+  return h / p;
+}
+// Geschwindigkeit v/c
+function betaOf(Uvolt) {
+  const { m, e, c } = PHYS;
+  const gamma = 1 + e * Uvolt / (m * c * c);
+  return Math.sqrt(1 - 1 / (gamma * gamma));
+}
+
+// Alle abgeleiteten Größen (reale Werte + Zeichenmaßstab)
+function getParams() {
+  const light = state.mode === 'light';
+  const lamReal = light ? state.lambdaNm * 1e-9 : deBroglie(state.U * 1e3);
+  const lamPx = light ? state.lambdaNm * PX_PER_NM : lamReal * 1e12 * PX_PER_PM;
+  const dPx = state.d * PX_PER_UM;
+  const LPx = state.L * PX_PER_CM_L;
+  return {
+    light, lamReal, lamPx, dPx, LPx,
+    dReal: state.d * 1e-6,
+    LReal: state.L * 1e-2,
+    sx: WALL_X + LPx,                                     // x-Position des Schirms
+    y1: YC - dPx / 2, y2: YC + dPx / 2,                   // Spaltmitten
+    aPx: Math.min(Math.max(1.4 * lamPx, 12), 0.5 * dPx)   // Spaltbreite (nur Zeichnung)
+  };
+}
+
+const sinc = x => (Math.abs(x) < 1e-6 ? 1 : Math.sin(x) / x);
+
+// Intensität auf dem Schirm bei y (normiert): Doppelspalt-Term cos²(π·Δs/λ) × Einzelspalt-Einhüllende
+function screenI(y, p) {
+  const r1 = Math.hypot(p.LPx, y - p.y1);
+  const r2 = Math.hypot(p.LPx, y - p.y2);
+  const c = Math.cos(Math.PI * (r2 - r1) / p.lamPx);
+  const s = (y - YC) / Math.hypot(p.LPx, y - YC);
+  const env = sinc(Math.PI * p.aPx * s / p.lamPx);
+  return c * c * env * env;
+}
+
+// Ort auf dem Schirm, an dem r2 − r1 = delta gilt (exakt: Schnitt der Hyperbel mit dem Schirm)
+function screenYForDelta(delta, p) {
+  if (delta === 0) return YC;
+  const a = Math.abs(delta) / 2, c = p.dPx / 2;
+  if (a >= c - 0.5) return null;                    // gibt es nicht (Δs wäre größer als d)
+  const b2 = c * c - a * a;
+  const u = a * Math.sqrt(1 + p.LPx * p.LPx / b2);
+  return delta < 0 ? YC + u : YC - u;               // delta < 0: näher an Spalt 2 (unten)
+}
+
+// Wege und Gangunterschied für den Messpunkt P = (Schirm, state.py)
+function pathInfo(p) {
+  const r1 = Math.hypot(p.LPx, state.py - p.y1);
+  const r2 = Math.hypot(p.LPx, state.py - p.y2);
+  const q = Math.abs(r2 - r1) / p.lamPx;            // |Δs| in Einheiten von λ
+  const f = q - Math.floor(q);
+  let kind = 'mid';
+  if (Math.min(f, 1 - f) < 0.05) kind = 'max';
+  else if (Math.abs(f - 0.5) < 0.05) kind = 'min';
+  return { r1, r2, q, kind, n: Math.round(q), nf: Math.floor(q) };
+}
+
+/* =====================================================================
+ *  FARBEN: Palette aus den CSS-Variablen (Hell-/Dunkelmodus)
+ * ===================================================================*/
+function makeLUT(stops) {
+  const lut = new Uint8ClampedArray(256 * 3);
+  for (let i = 0; i < 256; i++) {
+    const t = i / 255;
+    let k = 0;
+    while (k < stops.length - 2 && t > stops[k + 1][0]) k++;
+    const [t0, c0] = stops[k], [t1, c1] = stops[k + 1];
+    const f = Math.min(1, Math.max(0, (t - t0) / (t1 - t0)));
+    for (let ch = 0; ch < 3; ch++) lut[i * 3 + ch] = c0[ch] + (c1[ch] - c0[ch]) * f;
+  }
+  return lut;
+}
+const cssVar = n => getComputedStyle(root).getPropertyValue(n).trim();
+function hexRGB(h) {
+  h = h.replace('#', '');
+  if (h.length === 3) h = h.split('').map(c => c + c).join('');
+  const n = parseInt(h, 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+let PAL = {};
+function loadPalette() {
+  PAL = {
+    bg: cssVar('--cv-bg'), ink: cssVar('--cv-ink'), muted: cssVar('--cv-muted'), labelBg: cssVar('--cv-label-bg'),
+    c1: cssVar('--c1'), c2: cssVar('--c2'), accent: cssVar('--accent'),
+    wall: cssVar('--cv-wall'), wallEdge: cssVar('--cv-wall-edge'), screen: cssVar('--cv-screen'),
+    plane: cssVar('--cv-plane'), sum: cssVar('--cv-sum'), scopeBg: cssVar('--cv-scope-bg'),
+    // Wellenfeld: Wellental (neg) – ruhig (0) – Wellenberg (pos)
+    lut: makeLUT([[0, hexRGB(cssVar('--wave-neg'))], [.5, hexRGB(cssVar('--wave-zero'))], [1, hexRGB(cssVar('--wave-pos'))]])
+  };
+}
+// Wellenlänge (nm) → ungefähre Farbe, für das Muster auf dem Schirm im Lichtmodus
+function wavelengthToRGB(wl) {
+  let r = 0, g = 0, b = 0;
+  if (wl < 440)      { r = -(wl - 440) / 60; b = 1; }
+  else if (wl < 490) { g = (wl - 440) / 50;  b = 1; }
+  else if (wl < 510) { g = 1; b = -(wl - 510) / 20; }
+  else if (wl < 580) { r = (wl - 510) / 70;  g = 1; }
+  else if (wl < 645) { r = 1; g = -(wl - 645) / 65; }
+  else               { r = 1; }
+  let f = 1;
+  if (wl < 420) f = .3 + .7 * (wl - 380) / 40;
+  else if (wl > 700) f = .3 + .7 * (780 - wl) / 80;
+  return [r, g, b].map(v => Math.round(255 * Math.pow(Math.max(0, v * f), 0.8)));
+}
+
+/* =====================================================================
+ *  CANVAS-SETUP
+ * ===================================================================*/
+const DPR = Math.min(window.devicePixelRatio || 1, 2);
+function setupCanvas(c, w, h) {
+  c.width = w * DPR; c.height = h * DPR;
+  const x = c.getContext('2d');
+  x.setTransform(DPR, 0, 0, DPR, 0, 0);
+  return x;
+}
+const canvas = $('stage');
+const ctx = setupCanvas(canvas, W, H);
+const SW = 560, SH = 240;                              // Schwingungsdiagramm
+const scope = $('scope');
+const sctx = setupCanvas(scope, SW, SH);
+
+// Offscreen: Wellenfeld in grober Auflösung
+const fieldCanvas = document.createElement('canvas');
+const fctx = fieldCanvas.getContext('2d');
+const FH = Math.ceil(H / CS);
+let fw = 0, fImg = null;
+function ensureField(nw) {
+  if (nw !== fw || !fImg) {
+    fw = nw; fieldCanvas.width = fw; fieldCanvas.height = FH;
+    fImg = fctx.createImageData(fw, FH);
+  }
+}
+// Offscreen: Elektroneneinschläge (sammeln sich dauerhaft an)
+const hitCanvas = document.createElement('canvas');
+const hctx = setupCanvas(hitCanvas, STRIP, H);
+
+/* =====================================================================
+ *  ÜBERLAGERUNGS-ANSICHT: Wellenfeld (Summe beider Kreiswellen)
+ *  Links der Blende: ebene Welle cos(k(x − x_Blende) − ωt) → läuft zur Blende hin.
+ *  Rechts: zwei Kreiswellen cos(k r − ωt) → laufen von den Spalten weg.
+ * ===================================================================*/
+const A0 = 1 / Math.sqrt(70);
+function renderField(p, simT) {
+  const nw = Math.max(2, Math.ceil(p.sx / CS));
+  ensureField(nw);
+  const data = fImg.data, lut = PAL.lut;
+  const k = TWO_PI / p.lamPx, phase = k * WAVE_SPEED * simT;
+  const kA = Math.PI * p.aPx / p.lamPx, norm = 1 / (2 * A0);
+  // Farbindex der ebenen Welle (hängt nur von x ab)
+  const planeIdx = new Int32Array(nw);
+  for (let i = 0; i < nw; i++) {
+    const x = (i + 0.5) * CS;
+    if (x < WALL_X) planeIdx[i] = (((PLANE_AMP * Math.cos(k * (x - WALL_X) - phase) + 1) * 0.5 * 255) | 0) * 3;
+  }
+  for (let j = 0; j < FH; j++) {
+    const y = (j + 0.5) * CS, dy1 = y - p.y1, dy2 = y - p.y2;
+    for (let i = 0; i < nw; i++) {
+      const x = (i + 0.5) * CS;
+      let li;
+      if (x < WALL_X) {
+        li = planeIdx[i];
+      } else {
+        const dx = x - WALL_X;
+        const r1 = Math.sqrt(dx * dx + dy1 * dy1), r2 = Math.sqrt(dx * dx + dy2 * dy2);
+        const a1 = sinc(kA * dy1 / r1) / Math.sqrt(r1 + 40);
+        const a2 = sinc(kA * dy2 / r2) / Math.sqrt(r2 + 40);
+        let v = (a1 * Math.cos(k * r1 - phase) + a2 * Math.cos(k * r2 - phase)) * norm;
+        v = v > 1 ? 1 : v < -1 ? -1 : v;
+        li = (((v + 1) * 0.5 * 255) | 0) * 3;
+      }
+      const o = (j * nw + i) * 4;
+      data[o] = lut[li]; data[o + 1] = lut[li + 1]; data[o + 2] = lut[li + 2]; data[o + 3] = 255;
+    }
+  }
+  fctx.putImageData(fImg, 0, 0);
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(fieldCanvas, 0, 0, nw, FH, 0, 0, nw * CS, FH * CS);
+}
+
+/* =====================================================================
+ *  EINZELWELLEN-ANSICHT (wie im Lehrbuch)
+ *  Durchgezogen = Wellenberg, gestrichelt = Wellental.
+ *  Markiert werden die Schnittpunkte beider Wellen:
+ *    Berg+Berg bzw. Tal+Tal → Verstärkung,  Berg+Tal → Auslöschung.
+ * ===================================================================*/
+function drawPlane(p, simT) {
+  // einfallende ebene Welle: Berge bei x = x_Blende + (vt mod λ) − j·λ → wandern nach RECHTS zur Blende
+  const lam = p.lamPx, s = (WAVE_SPEED * simT) % lam, ts = (s + lam / 2) % lam;
+  ctx.save();
+  ctx.beginPath(); ctx.rect(28, 0, WALL_X - 8 - 28, H); ctx.clip();
+  ctx.strokeStyle = PAL.plane;
+  ctx.setLineDash([]); ctx.lineWidth = 2.2;
+  for (let x = WALL_X + s - lam; x > 20; x -= lam) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+  ctx.setLineDash([5, 5]); ctx.lineWidth = 1.3; ctx.globalAlpha = 0.65;
+  for (let x = WALL_X + ts - lam; x > 20; x -= lam) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+  ctx.restore();
+}
+
+function drawRings(p, simT) {
+  const lam = p.lamPx, D = p.dPx;
+  const rho = (WAVE_SPEED * simT) % lam;                 // Berge bei r = vt + j·λ → wandern nach AUSSEN
+  const rMax = Math.hypot(p.LPx, H / 2 + D / 2) + lam;
+  const crest = [], trough = [];
+  for (let r = rho; r < rMax; r += lam) if (r > 1) crest.push(r);
+  for (let r = (rho + lam / 2) % lam; r < rMax; r += lam) if (r > 1) trough.push(r);
+
+  const fx = WALL_X + 8;
+  ctx.save();
+  ctx.beginPath(); ctx.rect(fx, 0, p.sx - fx, H); ctx.clip();
+
+  // Kreiswellen der beiden Spalte (Halbkreise hinter der Blende)
+  for (const [yc, col] of [[p.y1, PAL.c1], [p.y2, PAL.c2]]) {
+    ctx.strokeStyle = col;
+    ctx.setLineDash([]); ctx.lineWidth = 2.2; ctx.globalAlpha = 0.95;
+    for (const r of crest) { ctx.beginPath(); ctx.arc(WALL_X, yc, r, -Math.PI / 2, Math.PI / 2); ctx.stroke(); }
+    ctx.setLineDash([5, 5]); ctx.lineWidth = 1.3; ctx.globalAlpha = 0.65;
+    for (const r of trough) { ctx.beginPath(); ctx.arc(WALL_X, yc, r, -Math.PI / 2, Math.PI / 2); ctx.stroke(); }
+  }
+  ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+  // Schnittpunkte der Kreise (Kreise um (0,y1) und (0,y2) mit Radien r1, r2)
+  const mark = (A, B, constructive) => {
+    for (const r1 of A) for (const r2 of B) {
+      if (r1 + r2 < D || Math.abs(r1 - r2) > D) continue;       // schneiden sich nicht
+      const h = (r1 * r1 - r2 * r2 + D * D) / (2 * D);            // Abstand von Spalt 1 entlang der Blende
+      const x2 = r1 * r1 - h * h;
+      if (x2 <= 0) continue;
+      const x = Math.sqrt(x2);
+      if (x < 4 || x > p.LPx) continue;
+      const px = WALL_X + x, py = p.y1 + h;
+      if (py < 2 || py > H - 2) continue;
+      ctx.beginPath();
+      if (constructive) {
+        ctx.arc(px, py, 3.6, 0, TWO_PI);
+        ctx.fillStyle = PAL.ink; ctx.fill();
+        ctx.lineWidth = 1.6; ctx.strokeStyle = PAL.accent; ctx.stroke();
+      } else {
+        ctx.arc(px, py, 3.1, 0, TWO_PI);
+        ctx.fillStyle = PAL.bg; ctx.fill();
+        ctx.lineWidth = 1.7; ctx.strokeStyle = PAL.ink; ctx.stroke();
+      }
+    }
+  };
+  mark(crest, crest, true); mark(trough, trough, true);
+  mark(crest, trough, false); mark(trough, crest, false);
+  ctx.restore();
+}
+
+/* =====================================================================
+ *  ZEICHENHILFEN
+ * ===================================================================*/
+function label(text, x, y, o = {}) {
+  ctx.font = o.font || '13px system-ui, sans-serif';
+  ctx.textAlign = o.align || 'left';
+  ctx.textBaseline = 'middle';
+  if (o.bg) {
+    const w = ctx.measureText(text).width + 10;
+    const bx = o.align === 'right' ? x - w + 5 : o.align === 'center' ? x - w / 2 : x - 5;
+    ctx.fillStyle = PAL.labelBg;
+    ctx.fillRect(bx, y - 10, w, 20);
+  }
+  ctx.fillStyle = o.color || PAL.muted;
+  ctx.fillText(text, x, y);
+}
+function arrow(x1, y1, x2, y2, color, lw = 1.4) {
+  const ang = Math.atan2(y2 - y1, x2 - x1), hs = 6;
+  ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = lw;
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+  for (const [x, y, a] of [[x2, y2, ang], [x1, y1, ang + Math.PI]]) {
+    if (a !== ang && arrow.single) continue;
+    ctx.beginPath(); ctx.moveTo(x, y);
+    ctx.lineTo(x - hs * Math.cos(a - 0.4), y - hs * Math.sin(a - 0.4));
+    ctx.lineTo(x - hs * Math.cos(a + 0.4), y - hs * Math.sin(a + 0.4));
+    ctx.closePath(); ctx.fill();
+  }
+}
+
+// Quelle, Ausbreitungsrichtung und λ-Maßstab
+function drawSourceDeco(p) {
+  const glow = p.light ? wavelengthToRGB(state.lambdaNm) : null;
+  ctx.fillStyle = PAL.wall; ctx.fillRect(10, 0, 14, H);
+  ctx.fillStyle = glow ? `rgb(${glow[0]},${glow[1]},${glow[2]})` : PAL.accent;
+  ctx.fillRect(24, 0, 4, H);
+  label(p.light ? 'Lichtquelle' : 'Elektronenquelle', 32, 20, { color: PAL.ink, font: '12px system-ui, sans-serif', bg: true });
+  if (!p.light) label(`U = ${state.U} kV`, 32, 40, { color: PAL.accent, font: '12px system-ui, sans-serif', bg: true });
+  // Ausbreitungsrichtung: von der Quelle zur Blende
+  arrow.single = true;
+  arrow(44, 76, WALL_X - 44, 76, PAL.ink, 2);
+  arrow.single = false;
+  label(p.light ? 'ebene Lichtwelle' : 'ebene Materiewelle', 44, 96, { color: PAL.ink, bg: true });
+  // λ-Maßstab
+  const lx = 44, ly = H - 30;
+  ctx.strokeStyle = PAL.ink; ctx.lineWidth = 1.8;
+  ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(lx + p.lamPx, ly);
+  ctx.moveTo(lx, ly - 5); ctx.lineTo(lx, ly + 5);
+  ctx.moveTo(lx + p.lamPx, ly - 5); ctx.lineTo(lx + p.lamPx, ly + 5); ctx.stroke();
+  label('λ', lx + p.lamPx / 2, ly - 14, { align: 'center', color: PAL.ink, font: 'italic 16px Georgia, serif', bg: true });
+}
+
+// Doppelspaltblende
+function drawWall(p) {
+  const a = p.aPx;
+  const segs = [[0, p.y1 - a / 2], [p.y1 + a / 2, p.y2 - a / 2], [p.y2 + a / 2, H]];
+  ctx.fillStyle = PAL.wall;
+  for (const [ya, yb] of segs) ctx.fillRect(WALL_X - 8, ya, 16, yb - ya);
+  ctx.fillStyle = PAL.wallEdge;
+  for (const y of [p.y1 - a / 2, p.y1 + a / 2, p.y2 - a / 2, p.y2 + a / 2]) ctx.fillRect(WALL_X - 8, y - 1, 16, 2);
+  label('Doppelspalt', WALL_X, 16, { align: 'center', color: PAL.ink, bg: true });
+  label('Spalt 1', WALL_X + 14, p.y1 - 14, { color: PAL.c1, font: '12px system-ui, sans-serif', bg: true });
+  label('Spalt 2', WALL_X + 14, p.y2 + 14, { color: PAL.c2, font: '12px system-ui, sans-serif', bg: true });
+  // Maßpfeil d
+  const bx = WALL_X - 28;
+  arrow(bx, p.y1, bx, p.y2, PAL.ink);
+  label('d', bx - 8, YC, { align: 'right', color: PAL.ink, font: 'italic 16px Georgia, serif', bg: true });
+}
+
+// Linien der Maxima (Δs = n·λ) und Minima (Δs = (n+½)·λ): exakte Hyperbeln um die beiden Spalte
+function drawLines(p) {
+  const c = p.dPx / 2, fx = WALL_X + 8, lam = p.lamPx;
+  const curve = delta => {
+    const a = Math.abs(delta) / 2;
+    ctx.beginPath();
+    if (delta === 0) { ctx.moveTo(WALL_X, YC); ctx.lineTo(p.sx, YC); }
+    else {
+      const b2 = c * c - a * a;
+      if (b2 < 4) return;
+      const sgn = delta > 0 ? -1 : 1;
+      for (let v = 0; v <= p.LPx + 4; v += 4) {
+        const u = a * Math.sqrt(1 + v * v / b2);          // Hyperbel: u²/a² − v²/b² = 1
+        v === 0 ? ctx.moveTo(WALL_X + v, YC + sgn * u) : ctx.lineTo(WALL_X + v, YC + sgn * u);
+      }
+    }
+    ctx.stroke();
+  };
+  ctx.save();
+  ctx.beginPath(); ctx.rect(fx, 0, p.sx - fx, H); ctx.clip();
+  const nMax = Math.floor((p.dPx - 1) / lam);
+  ctx.strokeStyle = PAL.ink;
+  for (let n = -nMax; n <= nMax; n++) {                 // Maxima
+    ctx.globalAlpha = n === 0 ? 0.75 : 0.55;
+    ctx.lineWidth = n === 0 ? 1.8 : 1.4;
+    ctx.setLineDash(n === 0 ? [] : [7, 5]);
+    curve(n * lam);
+  }
+  ctx.strokeStyle = PAL.muted; ctx.lineWidth = 1.3; ctx.setLineDash([2, 5]); ctx.globalAlpha = 0.75;
+  for (let m = 0; (m + 0.5) * lam < p.dPx - 1; m++) {   // Minima
+    curve((m + 0.5) * lam); curve(-(m + 0.5) * lam);
+  }
+  ctx.restore();
+  // Beschriftung der Maxima am Schirm
+  for (let n = -nMax; n <= nMax; n++) {
+    const y = screenYForDelta(n * lam, p);
+    if (y === null || y < 14 || y > H - 14) continue;
+    label(`n = ${n}`, p.sx - 6, y, { align: 'right', color: PAL.ink, font: '12px system-ui, sans-serif', bg: true });
+  }
+}
+
+/* =====================================================================
+ *  SCHIRM, INTENSITÄTSKURVE / ELEKTRONEN-NACHWEIS
+ *  Elektronen: Die Welle läuft als Ganzes durch beide Spalte; nachgewiesen wird
+ *  jedes Elektron einzeln als Punkt. Die Orte folgen der Intensität des Wellenbilds.
+ * ===================================================================*/
+const bins = new Float64Array(NB);
+const flashes = [];
+let hitCount = 0;
+
+function sampleHit(p) {                                  // Zufallsverfahren: Orte gemäß screenI(y)
+  for (let i = 0; i < 300; i++) {
+    const y = 16 + Math.random() * (H - 32);
+    if (Math.random() < screenI(y, p)) return y;
+  }
+  return YC;
+}
+function addHit(p, simT) {
+  const y = sampleHit(p), jx = 1.5 + Math.random() * (STRIP - 3.5);
+  hctx.fillStyle = 'rgba(255,238,185,.95)';
+  hctx.fillRect(jx, y, 2, 2);
+  bins[Math.min(NB - 1, Math.max(0, Math.floor((y - 10) / BIN)))]++;
+  hitCount++;
+  flashes.push({ y, jx, t: simT });
+  if (flashes.length > 60) flashes.shift();
+}
+function clearHits() {
+  hctx.clearRect(0, 0, STRIP, H);
+  bins.fill(0); hitCount = 0; flashes.length = 0;
+}
+let emitAcc = 0;
+function emitElectrons(p, dt, simT) {
+  emitAcc += state.rate * dt;
+  let n = 0;
+  while (emitAcc >= 1 && n < 40) { emitAcc -= 1; n++; addHit(p, simT); }
+  if (emitAcc >= 1) emitAcc = 0;
+}
+
+function drawScreen(p, simT) {
+  const sx = p.sx;
+  ctx.fillStyle = PAL.screen; ctx.fillRect(sx, 0, STRIP, H);
+  if (p.light) {
+    // Muster live: Farbe = Wellenlänge, Helligkeit = Intensität
+    const col = wavelengthToRGB(state.lambdaNm);
+    for (let y = 0; y < H; y += 2) {
+      const v = Math.pow(screenI(y + 1, p), 0.75);
+      ctx.fillStyle = `rgb(${(4 + col[0] * v) | 0},${(9 + col[1] * v) | 0},${(38 * (1 - v) + col[2] * v) | 0})`;
+      ctx.fillRect(sx, y, STRIP, 2);
+    }
+  } else {
+    ctx.drawImage(hitCanvas, 0, 0, STRIP * DPR, H * DPR, sx, 0, STRIP, H);
+    for (const f of flashes) {                           // kurzes Aufblitzen neuer Einschläge
+      const age = simT - f.t;
+      if (age >= 0 && age < 0.35) {
+        ctx.strokeStyle = `rgba(255,238,185,${0.9 * (1 - age / 0.35)})`;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(sx + f.jx + 1, f.y + 1, 3 + age * 24, 0, TWO_PI); ctx.stroke();
+      }
+    }
+  }
+  ctx.strokeStyle = PAL.accent; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(sx, 0); ctx.lineTo(sx, H); ctx.stroke();
+  label('Schirm', sx + STRIP / 2, 16, { align: 'center', color: PAL.ink, bg: true });
+
+  // Graph rechts neben dem Schirm
+  const gx = sx + STRIP + 18, gw = Math.min(190, W - gx - 12);
+  ctx.strokeStyle = PAL.muted; ctx.lineWidth = 1; ctx.globalAlpha = 0.6;
+  ctx.beginPath(); ctx.moveTo(gx, 6); ctx.lineTo(gx, H - 6); ctx.stroke();
+  ctx.globalAlpha = 1;
+  label(p.light ? 'Intensität I(y)' : `Einschläge  N = ${hitCount.toLocaleString('de-DE')}`, gx + 6, 16,
+        { color: PAL.muted, font: 'italic 13px Georgia, serif' });
+  if (p.light) {
+    ctx.beginPath(); ctx.moveTo(gx, 0);
+    for (let y = 0; y <= H; y += 2) ctx.lineTo(gx + screenI(y, p) * gw, y);
+    ctx.lineTo(gx, H); ctx.closePath();
+    ctx.globalAlpha = 0.2; ctx.fillStyle = PAL.accent; ctx.fill(); ctx.globalAlpha = 1;
+    ctx.strokeStyle = PAL.accent; ctx.lineWidth = 2; ctx.stroke();
+  } else {
+    if (hitCount > 0) {                                  // Histogramm der Einschläge
+      let sumI = 0;
+      for (let b = 0; b < NB; b++) sumI += screenI(10 + (b + .5) * BIN, p);
+      const peak = hitCount / sumI;
+      ctx.globalAlpha = 0.7; ctx.fillStyle = PAL.c2;
+      for (let b = 0; b < NB; b++) ctx.fillRect(gx, 10 + b * BIN, Math.min(bins[b] / peak, 1.25) * gw, BIN - 1);
+      ctx.globalAlpha = 1;
+    }
+    ctx.beginPath();
+    for (let y = 0; y <= H; y += 2) {
+      const x = gx + screenI(y, p) * gw;
+      y === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.setLineDash([5, 4]); ctx.strokeStyle = PAL.accent; ctx.lineWidth = 1.8; ctx.stroke(); ctx.setLineDash([]);
+  }
+  // Messpunkt-Linie über Schirm und Graph
+  ctx.strokeStyle = PAL.accent; ctx.lineWidth = 1.4; ctx.setLineDash([3, 3]); ctx.globalAlpha = 0.85;
+  ctx.beginPath(); ctx.moveTo(sx, state.py); ctx.lineTo(gx + gw, state.py); ctx.stroke();
+  ctx.setLineDash([]); ctx.globalAlpha = 1;
+}
+
+// L-Markierung
+function drawL(p) {
+  const y = H - 12;
+  arrow(WALL_X, y, p.sx, y, PAL.ink);
+  label('L', (WALL_X + p.sx) / 2, y - 13, { align: 'center', color: PAL.ink, font: 'italic 16px Georgia, serif', bg: true });
+}
+
+// Messpunkt P: Wege r1 und r2 von den Spalten
+function drawProbe(p, inf) {
+  const Px = p.sx, Py = state.py;
+  ctx.save();
+  ctx.lineCap = 'round'; ctx.lineWidth = 2.6;
+  ctx.strokeStyle = PAL.c1; ctx.beginPath(); ctx.moveTo(WALL_X, p.y1); ctx.lineTo(Px, Py); ctx.stroke();
+  ctx.strokeStyle = PAL.c2; ctx.beginPath(); ctx.moveTo(WALL_X, p.y2); ctx.lineTo(Px, Py); ctx.stroke();
+  ctx.restore();
+  const mx = WALL_X + (Px - WALL_X) * 0.5;
+  label('r₁', mx, (p.y1 + Py) / 2 - 12, { align: 'center', color: PAL.c1, font: 'italic 16px Georgia, serif', bg: true });
+  label('r₂', mx, (p.y2 + Py) / 2 + 12, { align: 'center', color: PAL.c2, font: 'italic 16px Georgia, serif', bg: true });
+  ctx.beginPath(); ctx.arc(Px, Py, 6.5, 0, TWO_PI);
+  ctx.fillStyle = inf.kind === 'max' ? PAL.ink : inf.kind === 'min' ? PAL.bg : PAL.muted; ctx.fill();
+  ctx.lineWidth = 2.5; ctx.strokeStyle = PAL.accent; ctx.stroke();
+  label('P', Px + STRIP + 5, Py - 12, { color: PAL.ink, font: 'bold 14px system-ui, sans-serif', bg: true });
+}
+
+/* =====================================================================
+ *  SCHWINGUNGSDIAGRAMM AM MESSPUNKT P
+ *  oben: Welle von Spalt 1, Mitte: Welle von Spalt 2, unten: Summe.
+ *  Zeitverlauf läuft nach links (Gegenwart am rechten Rand), senkrechte Linien
+ *  markieren die Wellenberge von Welle 1 – so sieht man, ob Welle 2 gleichzeitig Berg oder Tal hat.
+ * ===================================================================*/
+function drawScope(p, simT, inf) {
+  const c = sctx;
+  c.clearRect(0, 0, SW, SH);
+  c.fillStyle = PAL.scopeBg; c.fillRect(0, 0, SW, SH);
+  const k = TWO_PI / p.lamPx, wt = k * WAVE_SPEED * simT;
+  const ph1 = k * inf.r1 - wt, ph2 = k * inf.r2 - wt;     // Phase der beiden Wellen jetzt an P
+  const x0 = 96, x1 = SW - 18, span = 2.5;                 // 2,5 Perioden sichtbar
+  const X = tau => x0 + (tau + span) / span * (x1 - x0);
+  const rows = [
+    { cy: 38,  u: 22, col: PAL.c1,  t1: 'Welle von', t2: 'Spalt 1', f: tau => Math.cos(ph1 - TWO_PI * tau) },
+    { cy: 100, u: 22, col: PAL.c2,  t1: 'Welle von', t2: 'Spalt 2', f: tau => Math.cos(ph2 - TWO_PI * tau) },
+    { cy: 184, u: 22, col: PAL.sum, t1: 'Summe',     t2: 'bei P',   f: tau => Math.cos(ph1 - TWO_PI * tau) + Math.cos(ph2 - TWO_PI * tau) }
+  ];
+  c.font = '12px system-ui, sans-serif'; c.textBaseline = 'middle';
+
+  // senkrechte Hilfslinien bei den Wellenbergen von Welle 1
+  c.strokeStyle = PAL.muted; c.globalAlpha = 0.4; c.lineWidth = 1; c.setLineDash([3, 4]);
+  for (let m = -12; m <= 12; m++) {
+    const tau = ph1 / TWO_PI - m;
+    if (tau < -span || tau > 0) continue;
+    c.beginPath(); c.moveTo(X(tau), 6); c.lineTo(X(tau), SH - 6); c.stroke();
+  }
+  c.setLineDash([]); c.globalAlpha = 1;
+
+  // Nulllinien, Beschriftung, Kurven
+  for (const r of rows) {
+    c.strokeStyle = PAL.muted; c.globalAlpha = 0.45; c.lineWidth = 1;
+    c.beginPath(); c.moveTo(x0, r.cy); c.lineTo(x1, r.cy); c.stroke(); c.globalAlpha = 1;
+    c.textAlign = 'left'; c.fillStyle = r.col;
+    c.fillText(r.t1, 10, r.cy - 8); c.fillText(r.t2, 10, r.cy + 8);
+  }
+  // Amplitude der Summe: gestrichelte Hüllkurve ±2|cos(π·Δs/λ)|
+  const amp = 2 * Math.abs(Math.cos(Math.PI * inf.q));
+  c.strokeStyle = PAL.sum; c.globalAlpha = 0.5; c.lineWidth = 1.2; c.setLineDash([6, 4]);
+  for (const s of [-1, 1]) { c.beginPath(); c.moveTo(x0, rows[2].cy + s * amp * 22); c.lineTo(x1, rows[2].cy + s * amp * 22); c.stroke(); }
+  c.setLineDash([]); c.globalAlpha = 1;
+
+  const N = 200;
+  rows.forEach((r, idx) => {
+    c.beginPath();
+    for (let i = 0; i <= N; i++) {
+      const tau = -span + span * i / N, x = X(tau), y = r.cy - r.u * r.f(tau);
+      i ? c.lineTo(x, y) : c.moveTo(x, y);
+    }
+    c.strokeStyle = r.col; c.lineWidth = idx === 2 ? 3 : 2.2; c.lineJoin = 'round'; c.stroke();
+    c.beginPath(); c.arc(x1, r.cy - r.u * r.f(0), 4.5, 0, TWO_PI); c.fillStyle = r.col; c.fill();   // „jetzt“
+  });
+  c.textAlign = 'right'; c.fillStyle = PAL.muted;
+  c.fillText('jetzt →', x1 + 12, SH - 10);
+  c.textAlign = 'left';
+  c.fillText('← früher', x0, SH - 10);
+}
+
+/* =====================================================================
+ *  OBERFLÄCHE
+ * ===================================================================*/
+function fmtLen(m) {
+  if (m < 1e-9) return de(m * 1e12) + ' pm';
+  if (m < 1e-6) return de(m * 1e9) + ' nm';
+  if (m < 1e-3) return de(m * 1e6) + ' µm';
+  if (m < 1)    return de(m * 1e3) + ' mm';
+  return de(m) + ' m';
+}
+function setPct(el) {
+  el.style.setProperty('--pct', ((el.value - el.min) / (el.max - el.min) * 100) + '%');
+}
+function syncBody() {
+  document.body.className = 'mode-' + state.mode + ' view-' + state.view;
+  $('modeLight').setAttribute('aria-pressed', state.mode === 'light');
+  $('modeElectron').setAttribute('aria-pressed', state.mode === 'electron');
+  $('viewRings').setAttribute('aria-pressed', state.view === 'rings');
+  $('viewSum').setAttribute('aria-pressed', state.view === 'sum');
+}
+
+// Werte, die sich nur bei Parameteränderung ändern
+function updateUI() {
+  const p = getParams();
+  $('v-lambda').textContent = state.lambdaNm + ' nm';
+  $('v-U').textContent = state.U + ' kV';
+  $('v-d').textContent = de(state.d, 2) + ' µm';
+  $('v-L').textContent = state.L + ' cm';
+  $('v-rate').textContent = state.rate + ' / s';
+  ['lambda', 'U', 'd', 'L', 'rate'].forEach(id => setPct($(id)));
+
+  $('rLam').textContent = fmtLen(p.lamReal);
+  const s1 = p.lamReal / p.dReal;
+  $('rAlpha').textContent = s1 <= 1 ? de(Math.asin(s1) * 180 / Math.PI) + '°' : 'kein 1. Max.';
+  $('rDy').textContent = fmtLen(p.lamReal * p.LReal / p.dReal);
+  if (!p.light) $('rV').textContent = de(betaOf(state.U * 1e3), 3) + ' c';
+
+  $('scaleNote').textContent = p.light
+    ? 'Schematische Zeichnung: Der Schirmabstand ist stark gestaucht, das Verhältnis d/λ stimmt.'
+    : 'Schematische Zeichnung: Abstände sind gestaucht und λ ist im Bild stark vergrößert (sonst wären die Streifen unsichtbar eng).';
+
+  // Schnellwahl für den Messpunkt nur anbieten, wenn der Ort auf dem Schirm liegt
+  const ok = y => y !== null && y > 12 && y < H - 12;
+  document.querySelector('.chip[data-p="max1"]').disabled = !ok(screenYForDelta(-p.lamPx, p));
+  document.querySelector('.chip[data-p="min1"]').disabled = !ok(screenYForDelta(-p.lamPx / 2, p));
+}
+
+// Anzeige zum Messpunkt (nur bei Änderung neu setzen)
+let lastInfoKey = '';
+function updateVerdict(inf) {
+  const key = inf.kind + '|' + inf.q.toFixed(2);
+  if (key === lastInfoKey) return;
+  lastInfoKey = key;
+  const qs = de(inf.q, 3), amp = 2 * Math.abs(Math.cos(Math.PI * inf.q));
+  let html;
+  if (inf.kind === 'max') {
+    html = `Gangunterschied <b>Δs = ${inf.n} · λ</b> → Berg trifft Berg (und Tal trifft Tal) → <b>Verstärkung</b>: Maximum (n = ${inf.n}).`;
+  } else if (inf.kind === 'min') {
+    html = `Gangunterschied <b>Δs = ${qs} · λ = (${inf.nf} + ½) · λ</b> → Berg trifft Tal → <b>Auslöschung</b>: Minimum.`;
+  } else {
+    html = `Gangunterschied <b>Δs = ${qs} · λ</b> → weder ganz- noch halbzahlig → die Wellen verstärken sich nur teilweise.`;
+  }
+  html += `<br><span class="amp">Amplitude der Summe: ${de(amp, 2)} (maximal 2)</span>`;
+  const v = $('verdict');
+  v.className = 'verdict ' + inf.kind;
+  v.innerHTML = html;
+}
+
+function setP(y) {
+  state.py = Math.min(H - 10, Math.max(10, y));
+  $('py').value = Math.round(state.py - YC);
+}
+function placeP(kind) {
+  const p = getParams();
+  let y = YC;
+  if (kind === 'max1') y = screenYForDelta(-p.lamPx, p);
+  if (kind === 'min1') y = screenYForDelta(-p.lamPx / 2, p);
+  if (y === null || y < 12 || y > H - 12) y = YC;
+  setP(y);
+}
+function setMode(m) {
+  state.mode = m;
+  if (m === 'light') { state.lambdaNm = 550; state.d = 2.0; state.L = 50; }
+  else               { state.U = 50;         state.d = 2.0; state.L = 35; }   // Werte wie auf dem Plakat
+  $('lambda').value = state.lambdaNm; $('U').value = state.U;
+  $('d').value = state.d; $('L').value = state.L;
+  clearHits();
+  syncBody(); updateUI(); placeP('max1');
+}
+function setView(v) { state.view = v; syncBody(); }
+function togglePlay() {
+  state.playing = !state.playing;
+  $('btnPlay').textContent = state.playing ? '⏸ Pause' : '▶ Start';
+}
+function applyTheme(t) {
+  root.setAttribute('data-theme', t);
+  try { localStorage.setItem('doppelspaltTheme', t); } catch (e) { /* ohne Speicher weiter */ }
+  $('btnTheme').textContent = t === 'dark' ? '☀ Hellmodus' : '☾ Dunkelmodus';
+  loadPalette();
+}
+
+// Ereignisse
+for (const [id, key] of [['lambda', 'lambdaNm'], ['U', 'U'], ['d', 'd'], ['L', 'L'], ['rate', 'rate']]) {
+  $(id).addEventListener('input', e => {
+    state[key] = parseFloat(e.target.value);
+    if (key !== 'rate') clearHits();                      // neue Physik → neuer Nachweis
+    updateUI();
+  });
+}
+$('py').addEventListener('input', e => { state.py = YC + parseFloat(e.target.value); });
+document.querySelectorAll('.chip').forEach(b => b.addEventListener('click', () => placeP(b.dataset.p)));
+$('modeLight').addEventListener('click', () => setMode('light'));
+$('modeElectron').addEventListener('click', () => setMode('electron'));
+$('viewRings').addEventListener('click', () => setView('rings'));
+$('viewSum').addEventListener('click', () => setView('sum'));
+$('btnPlay').addEventListener('click', togglePlay);
+$('btnReset').addEventListener('click', clearHits);
+$('chkLines').addEventListener('change', e => { state.showLines = e.target.checked; });
+$('btnTheme').addEventListener('click', () => applyTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'));
+window.addEventListener('keydown', e => {
+  if (e.code === 'Space' && !/INPUT|BUTTON/.test(document.activeElement.tagName)) { e.preventDefault(); togglePlay(); }
+});
+
+// Messpunkt per Klick/Ziehen im Bild setzen
+let dragging = false;
+function pFromEvent(ev) {
+  const r = canvas.getBoundingClientRect();
+  const x = (ev.clientX - r.left) / r.width * W, y = (ev.clientY - r.top) / r.height * H;
+  if (x > WALL_X) setP(y);
+}
+canvas.addEventListener('pointerdown', ev => { dragging = true; canvas.setPointerCapture(ev.pointerId); pFromEvent(ev); });
+canvas.addEventListener('pointermove', ev => { if (dragging) pFromEvent(ev); });
+canvas.addEventListener('pointerup', () => { dragging = false; });
+canvas.addEventListener('pointercancel', () => { dragging = false; });
+
+/* =====================================================================
+ *  HAUPTSCHLEIFE
+ * ===================================================================*/
+let simT = 0, last = performance.now();
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000);
+  last = now;
+  const p = getParams();
+  if (state.playing) {
+    simT += dt;
+    if (!p.light) emitElectrons(p, dt, simT);
+  }
+  const inf = pathInfo(p);
+
+  ctx.fillStyle = PAL.bg; ctx.fillRect(0, 0, W, H);
+  if (state.view === 'sum') renderField(p, simT);
+  else { drawPlane(p, simT); drawRings(p, simT); }
+  if (state.showLines) drawLines(p);
+  drawWall(p);
+  drawSourceDeco(p);
+  drawScreen(p, simT);
+  drawL(p);
+  drawProbe(p, inf);
+  drawScope(p, simT, inf);
+  updateVerdict(inf);
+
+  requestAnimationFrame(frame);
+}
+
+// Start
+let savedTheme = null;
+try { savedTheme = localStorage.getItem('doppelspaltTheme'); } catch (e) { /* ignorieren */ }
+applyTheme(savedTheme === 'light' || savedTheme === 'dark' ? savedTheme : 'dark');
+setMode('light');
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
